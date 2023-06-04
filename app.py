@@ -20,6 +20,7 @@ from pandas import DataFrame
 import os
 
 # Connect to MongoDB
+
 MONGODB_URL = os.getenv('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
 client = MongoClient(MONGODB_URL)
 db = client['projek_ml']
