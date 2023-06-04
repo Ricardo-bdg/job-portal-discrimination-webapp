@@ -20,12 +20,10 @@ from pandas import DataFrame
 import os
 
 # Connect to MongoDB
-@st.experimental_singleton(suppress_st_warning=True)
-def get_client():
-    MONGODB_URL = os.getenv('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
-    return MongoClient(MONGODB_URL)
 
-db = get_client['projek_ml']
+MONGODB_URL = os.getenv('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
+client = MongoClient(MONGODB_URL)
+db = client['projek_ml']
 collection = db['scraping']
 
 # Set your Instagram credentials
