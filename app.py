@@ -20,14 +20,13 @@ from pandas import DataFrame
 import os
 
 # Connect to MongoDB
-MONGODB_URL = os.getenv('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
-client = MongoClient(MONGODB_URL)
+client = MongoClient(f'mongodb+srv://{st.secrets["mongodb"]["username"]}:{st.secrets["mongodb"]["password"]}@jobads.ybbf3mh.mongodb.net/')
 db = client['projek_ml']
 collection = db['scraping']
 
 # Set your Instagram credentials
-my_user = "scrapetesting"
-my_pwd = 'do.ricard0'
+my_user = st.secrets["instagram"]["username"]
+my_pwd = st.secrets["instagram"]["password"]
 
 # Load the model
 model = BertForSequenceClassification.from_pretrained('bert-base-multilingual-uncased', num_labels=2)
@@ -118,7 +117,7 @@ def perform_image_scraping_ocr():
 
 def get_data_from_db():
     # Connect to MongoDB
-    client = MongoClient(MONGODB_URL)
+    client = MongoClient(f'mongodb+srv://{st.secrets["mongodb"]["username"]}:{st.secrets["mongodb"]["password"]}@jobads.ybbf3mh.mongodb.net/')
     db = client['projek_ml']
     collection = db['scraping']
 
