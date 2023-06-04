@@ -1,0 +1,24 @@
+# Gunakan Python image resmi dari Docker Hub
+FROM python:3.9-slim-buster
+
+# Izinkan pernyataan dan pesan log untuk segera muncul di log Knative
+ENV PYTHONUNBUFFERED True
+
+# Menyalin kode lokal ke gambar kontainer.
+WORKDIR /app
+COPY . .
+
+# Install dependensi produksi.
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install chromium dan chromium-chromedriver.
+RUN apt-get update && apt-get install -y \
+    chromium \
+    chromium-chromedriver \
+    && rm -rf /var/lib/apt/lists/*
+
+# Tambahkan chromedriver ke PATH sehingga Selenium bisa menemukannya.
+ENV PATH /usr/lib/chromium/:$PATH
+
+# Jalankan layanan web saat startup kontainer.
+CMD streamlit run --server.port 8080 --server.enableCORS false app.py
