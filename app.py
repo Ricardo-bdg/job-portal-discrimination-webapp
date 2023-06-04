@@ -17,9 +17,11 @@ import pandas as pd
 from transformers import AutoTokenizer, BertForSequenceClassification
 import torch
 from pandas import DataFrame
+import os
 
 # Connect to MongoDB
-client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
+MONGODB_URL = os.getenv('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
+client = MongoClient(MONGODB_URL)
 db = client['projek_ml']
 collection = db['scraping']
 
@@ -116,7 +118,7 @@ def perform_image_scraping_ocr():
 
 def get_data_from_db():
     # Connect to MongoDB
-    client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
+    client = MongoClient(MONGODB_URL)
     db = client['projek_ml']
     collection = db['scraping']
 
