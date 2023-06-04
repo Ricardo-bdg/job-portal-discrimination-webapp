@@ -135,6 +135,10 @@ def get_data_from_db():
     return df
 
 def main():
+    MONGODB_URL = os.getenv('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
+    client = MongoClient(MONGODB_URL)
+    db = client['projek_ml']
+    collection = db['scraping']
     st.title('Bias and Discrimination Recognition')
 
     # Load initial data
