@@ -17,26 +17,11 @@ import pandas as pd
 from transformers import AutoTokenizer, BertForSequenceClassification
 import torch
 from pandas import DataFrame
-import os
 
-def connect_to_mongo():
-    # Gunakan secrets untuk menyimpan data sensitif
-    username = st.secrets["mongodb"]["username"]
-    password = st.secrets["mongodb"]["password"]
-
-    # Membuat koneksi ke MongoDB
-    client = MongoClient(f'mongodb+srv://{username}:{password}@jobads.94mucvv.mongodb.net/')
-
-    # Mengakses database
-    db = client['projek_ml']
-
-    # Mengakses koleksi dalam database
-    collection = db['scraping']
-
-    return client, db, collection
-
-client, db, collection = connect_to_mongo()
-
+# Connect to MongoDB
+client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.ybbf3mh.mongodb.net/')
+db = client['projek_ml']
+collection = db['scraping']
 
 # Set your Instagram credentials
 my_user = "scrapetesting"
@@ -131,7 +116,10 @@ def perform_image_scraping_ocr():
 
 def get_data_from_db():
     # Connect to MongoDB
-    client, db, collection = connect_to_mongo()
+    client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.ybbf3mh.mongodb.net/')
+    db = client['projek_ml']
+    collection = db['scraping']
+
     # Get data from MongoDB
     data = collection.find()
 
@@ -144,7 +132,6 @@ def get_data_from_db():
     return df
 
 def main():
-    client, db, collection = connect_to_mongo()
     st.title('Bias and Discrimination Recognition')
 
     # Load initial data
@@ -204,3 +191,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
