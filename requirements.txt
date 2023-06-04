@@ -1,9 +1,9 @@
-pandas
-transformers
-torch
-imageio
-streamlit
-pymongo
+pandas==1.5.3
+transformers==4.29.2
+torch==2.0.1
+imageio==2.28.1
+streamlit==1.22.0
+pymongo==4.3.3
 selenium==3.141.0
 requests==2.28.2
 numpy==1.23.5
