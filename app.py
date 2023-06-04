@@ -1,5 +1,3 @@
-sementara kayak gini dulu 
-
 # Import Library
 import streamlit as st
 from pymongo import MongoClient
@@ -191,5 +189,5 @@ def main():
         prediction = classify_text(text)
         st.write(prediction)
 
-if _name_ == "_main_":
+if __name__== "_main_":
     main()
