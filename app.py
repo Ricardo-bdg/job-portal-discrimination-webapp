@@ -1,3 +1,5 @@
+sementara kayak gini dulu 
+
 # Import Library
 import streamlit as st
 from pymongo import MongoClient
@@ -19,7 +21,7 @@ import torch
 from pandas import DataFrame
 
 # Connect to MongoDB
-client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
+client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.ybbf3mh.mongodb.net/')
 db = client['projek_ml']
 collection = db['scraping']
 
@@ -77,7 +79,7 @@ def perform_image_scraping_ocr():
     sleep(3)
 
     # Keyword to search
-    keyword = "loker"
+    keyword = "lowongan"
     driver.get("https://www.instagram.com/explore/tags/" + keyword + "/")
     time.sleep(8)
     my_images = set()
@@ -116,7 +118,7 @@ def perform_image_scraping_ocr():
 
 def get_data_from_db():
     # Connect to MongoDB
-    client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.94mucvv.mongodb.net/')
+    client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.ybbf3mh.mongodb.net/')
     db = client['projek_ml']
     collection = db['scraping']
 
@@ -189,6 +191,5 @@ def main():
         prediction = classify_text(text)
         st.write(prediction)
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main()
-
