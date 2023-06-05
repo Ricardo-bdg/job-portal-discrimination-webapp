@@ -12,126 +12,137 @@ import time
 import requests
 from io import BytesIO
 from PIL import Image
-import easyocr  # Ganti dari pytesseract ke easyocr
+import easyocr
 import pandas as pd
 from transformers import AutoTokenizer, BertForSequenceClassification
 import torch
 from pandas import DataFrame
 
-# Connect to MongoDB
-client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.ybbf3mh.mongodb.net/')
-db = client['projek_ml']
-collection = db['scraping']
-
-# Set your Instagram credentials
-my_user = "scrapetesting"
-my_pwd = 'do.ricard0'
-
-# Load the model
-model = BertForSequenceClassification.from_pretrained('bert-base-multilingual-uncased', num_labels=2)
-model.load_state_dict(torch.load('IndoBERT_classifier.pt'))
-model.eval()
-
-# Load the tokenizer
-tokenizer = AutoTokenizer.from_pretrained('bert-base-multilingual-uncased')
-
-@st.cache_resource
-def get_driver():
-    options = Options()
-    options.add_argument('--disable-gpu')
-    options.add_argument('--headless')
-    return webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=options)
-
-
-@st.cache_data
-def classify_text(text):
-    # Tokenize the text
-    inputs = tokenizer(text, return_tensors='pt')
-
-    # Make prediction
-    outputs = model(**inputs)
-
-    # Get the predicted class
-    _, predicted = torch.max(outputs.logits, 1)
-
-    # Convert the prediction to 'bias' or 'Non-bias'
-    if predicted.item() == 1:
-        return 'bias'
-    else:
-        return 'Non-bias'
-
-@st.cache_data
-def perform_image_scraping_ocr():
-    driver = get_driver()
-    driver.get("https://www.instagram.com/accounts/login")
-    driver.maximize_window()
-    sleep(3)
-
-    user_name = driver.find_element(By.XPATH, "//input[@name='username']")
-    user_name.send_keys(my_user)
-    sleep(1)
-
-    password = driver.find_element(By.XPATH, "//input[@name='password']")
-    password.send_keys(my_pwd)
-    password.send_keys(Keys.RETURN)
-    sleep(3)
-
-    # Keyword to search
-    keyword = "lowongan"
-    driver.get("https://www.instagram.com/explore/tags/" + keyword + "/")
-    time.sleep(8)
-    my_images = set()
-
-    # Get all images on the page
-    images = driver.find_elements(By.XPATH, "//img[@class='x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3']")
-    while len(my_images) < 5:
-        for image in images:
-            source = image.get_attribute('src')
-            if collection.count_documents({'image_url': source}, limit=1) == 0:
-                my_images.add(source)
-                collection.insert_one({'image_url': source})
-            if len(my_images) >= 5:
-                break
-        if len(my_images) < 5:
-            driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-            sleep(3)
-            images = driver.find_elements(By.XPATH, "//img[@class='x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3']")
-
-    driver.quit()
-
-    # Initialize EasyOCR reader
-    reader = easyocr.Reader(['en', 'id'])  # Supports English and Indonesian
-
-    # Perform OCR on each image and save to MongoDB
-    for image_url in collection.find({'ocr_result': {'$exists': False}}):
-        url = image_url['image_url']
-        response = requests.get(url)
-        image = Image.open(BytesIO(response.content))
-        result = reader.readtext(image)
-        text = ' '.join([item[1] for item in result])
-        prediction = classify_text(text)
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-        collection.update_one({'image_url': url}, {'$set': {'ocr_result': text, 'timestamp': timestamp, 'prediction': prediction}})
-
-
-def get_data_from_db():
+def main():
     # Connect to MongoDB
-    client = MongoClient('mongodb+srv://ricardo8bdg:simarmataas123@jobads.ybbf3mh.mongodb.net/')
+    try:
+        client = MongoClient('mongodb+srv://dodoricardo:simarmataas123@cluster0.kuurexg.mongodb.net/')
+    except Exception as e:
+        st.error(f"Error connecting to MongoDB: {str(e)}")
+
     db = client['projek_ml']
     collection = db['scraping']
 
-    # Get data from MongoDB
-    data = collection.find()
+    # Set your Instagram credentials
+    my_user = "scrapetesting"
+    my_pwd = 'do.ricard0'
 
-    # Create a DataFrame
-    df = DataFrame(list(data))
+    # Load the model
+    model = BertForSequenceClassification.from_pretrained('bert-base-multilingual-uncased', num_labels=2)
+    model.load_state_dict(torch.load('IndoBERT_classifier.pt'))
+    model.eval()
 
-    # Sort by timestamp
-    df.sort_values(by='timestamp', ascending=False, inplace=True)
+    # Load the tokenizer
+    tokenizer = AutoTokenizer.from_pretrained('bert-base-multilingual-uncased')
 
-    return df
+    @st.cache_resource
+    def get_driver():
+        options = Options()
+        options.add_argument('--headless')
+        return webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=options)
 
-def main():
+    @st.cache_data
+    def classify_text(text):
+        # Tokenize the text
+        inputs = tokenizer(text, return_tensors='pt')
+
+        # Make prediction
+        outputs = model(**inputs)
+
+        # Get the predicted class
+        _, predicted = torch.max(outputs.logits, 1)
+
+        # Convert the prediction to 'bias' or 'Non-bias'
+        if predicted.item() == 1:
+            return 'bias'
+        else:
+            return 'Non-bias'
+
+    @st.cache_data
+    def perform_image_scraping_ocr():
+        with st.echo():
+            driver = get_driver()
+            driver.get("https://www.instagram.com/accounts/login")
+            driver.maximize_window()
+            sleep(3)
+
+            user_name = driver.find_element(By.XPATH, "//input[@name='username']")
+            user_name.send_keys(my_user)
+            sleep(1)
+
+            password = driver.find_element(By.XPATH, "//input[@name='password']")
+            password.send_keys(my_pwd)
+            password.send_keys(Keys.RETURN)
+            sleep(3)
+
+            # Keyword to search
+            keyword = "lowongan"
+            driver.get("https://www.instagram.com/explore/tags/" + keyword + "/")
+            time.sleep(8)
+            my_images = set()
+
+            # Get all images on the page
+            images = driver.find_elements(By.XPATH, "//img[@class='x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3']")
+            while len(my_images) < 5:
+                for image in images:
+                    source = image.get_attribute('src')
+                    if collection.count_documents({'image_url': source}, limit=1) == 0:
+                        my_images.add(source)
+                        collection.insert_one({'image_url': source})
+                    if len(my_images) >= 5:
+                        break
+                if len(my_images) < 5:
+                    driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
+                    sleep(3)
+                    images = driver.find_elements(By.XPATH, "//img[@class='x5yr21d xu96u03 x10l6tqk x13vifvy x87ps6o xh8yej3']")
+
+            driver.quit()
+
+            # Initialize EasyOCR reader
+            reader = easyocr.Reader(['en', 'id'])  # Supports English and Indonesian
+
+            # Perform OCR on each image and save to MongoDB
+            for image_url in collection.find({'ocr_result': {'$exists': False}}):
+                url = image_url['image_url']
+                response = requests.get(url)
+                image = Image.open(BytesIO(response.content))
+                result = reader.readtext(image)
+                text = ' '.join([item[1] for item in result])
+                prediction = classify_text(text)
+                timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+                collection.update_one({'image_url': url}, {'$set': {'ocr_result': text, 'timestamp': timestamp, 'prediction': prediction}})
+
+    def get_data_from_db():
+        # Connect to MongoDB
+        try:
+            client = MongoClient('mongodb+srv://dodoricardo:simarmataas123@cluster0.kuurexg.mongodb.net/')
+        except Exception as e:
+            st.error(f"Error connecting to MongoDB: {str(e)}")
+
+        db = client['projek_ml']
+        collection = db['scraping']
+
+        # Get data from MongoDB
+        data = collection.find()
+
+        # Create a DataFrame
+        df = DataFrame(list(data))
+
+        # Sort by timestamp
+        df.sort_values(by='timestamp', ascending=False, inplace=True)
+
+        return df
+
+    try:
+        client = MongoClient('mongodb+srv://dodoricardo:simarmataas123@cluster0.kuurexg.mongodb.net/')
+    except Exception as e:
+        st.error(f"Error connecting to MongoDB: {str(e)}")
+
     st.title('Bias and Discrimination Recognition')
 
     # Load initial data
@@ -189,5 +200,5 @@ def main():
         prediction = classify_text(text)
         st.write(prediction)
 
-if __name__== "_main_":
+if __name__ == "__main__":
     main()
